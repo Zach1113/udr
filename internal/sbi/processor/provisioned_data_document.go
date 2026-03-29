@@ -118,14 +118,17 @@ func (p *Processor) QueryProvisionedDataProcedure(c *gin.Context, ueId string, s
 			c.JSON(http.StatusInternalServerError, problemDetails)
 			return
 		}
-		for _, smData := range tmp {
-			dnnConfigurations := smData.DnnConfigurations
+		for i := range tmp {
+			dnnConfigurations := tmp[i].DnnConfigurations
 			tmpDnnConfigurations := make(map[string]models.DnnConfiguration)
 			for escapedDnn, dnnConf := range dnnConfigurations {
 				dnn := util.UnescapeDnn(escapedDnn)
 				tmpDnnConfigurations[dnn] = dnnConf
 			}
-			smData.DnnConfigurations = tmpDnnConfigurations
+			tmp[i].DnnConfigurations = tmpDnnConfigurations
+		}
+		if provisionedDataSets.SmData == nil {
+			provisionedDataSets.SmData = &models.SmSubsData{}
 		}
 		provisionedDataSets.SmData.IndividualSmSubsData = tmp
 	}
