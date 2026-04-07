@@ -81,8 +81,7 @@ func PreHandleInfluenceDataUpdateNotification(influenceId string, original, modi
 func SendOnDataChangeNotify(ueId string, notifyItems []models.NotifyItem) {
 	defer func() {
 		if p := recover(); p != nil {
-			// Print stack for panic to log. Fatalf() will let program exit.
-			logger.HttpLog.Fatalf("panic: %v\n%s", p, string(debug.Stack()))
+			logger.HttpLog.Errorf("panic: %v\n%s", p, string(debug.Stack()))
 		}
 	}()
 
@@ -94,12 +93,15 @@ func SendOnDataChangeNotify(ueId string, notifyItems []models.NotifyItem) {
 		if ueId == subscriptionDataSubscription.UeId {
 			onDataChangeNotifyUrl := subscriptionDataSubscription.CallbackReference
 
-			dataChangeReq := DataRepository.SubscriptionDataSubscriptionsOnDataChangePostRequest{}
-			dataChangeReq.DataChangeNotify.UeId = ueId
-			dataChangeReq.DataChangeNotify.OriginalCallbackReference = []string{
-				subscriptionDataSubscription.OriginalCallbackReference,
+			dataChangeReq := DataRepository.SubscriptionDataSubscriptionsOnDataChangePostRequest{
+				DataChangeNotify: &models.DataChangeNotify{
+					UeId: ueId,
+					OriginalCallbackReference: []string{
+						subscriptionDataSubscription.OriginalCallbackReference,
+					},
+					NotifyItems: notifyItems,
+				},
 			}
-			dataChangeReq.DataChangeNotify.NotifyItems = notifyItems
 			rsp, err := client.SubsToNotifyCollectionApi.SubscriptionDataSubscriptionsOnDataChangePost(
 				context.TODO(), onDataChangeNotifyUrl, &dataChangeReq)
 
@@ -133,7 +135,6 @@ func SendPolicyDataChangeNotification(policyDataChangeNotification models.Policy
 				policyDataChangeNotification,
 			},
 		}
-
 		rsp, err := client.PolicyDataSubscriptionsCollectionApi.
 			CreateIndividualPolicyDataSubscriptionPolicyDataChangeNotificationPost(context.TODO(),
 				policyDataChangeNotificationUrl, &req)
@@ -171,7 +172,6 @@ func SendInfluenceDataUpdateNotification(resUri string, original, modified *mode
 			req := DataRepository.CreateIndividualInfluenceDataSubscriptionTrafficInfluenceDataChangeNotificationPostRequest{
 				RequestBody: []interface{}{trafficInfluDataNotif},
 			}
-
 			rsp, err := client.InfluenceDataSubscriptionsCollectionApi.
 				CreateIndividualInfluenceDataSubscriptionTrafficInfluenceDataChangeNotificationPost(
 					context.TODO(), influenceDataChangeNotificationUrl, &req)
@@ -190,7 +190,6 @@ func SendInfluenceDataUpdateNotification(resUri string, original, modified *mode
 			req := DataRepository.CreateIndividualInfluenceDataSubscriptionTrafficInfluenceDataChangeNotificationPostRequest{
 				RequestBody: []interface{}{trafficInfluDataNotif},
 			}
-
 			rsp, err := client.InfluenceDataSubscriptionsCollectionApi.
 				CreateIndividualInfluenceDataSubscriptionTrafficInfluenceDataChangeNotificationPost(
 					context.TODO(), influenceDataChangeNotificationUrl, &req)

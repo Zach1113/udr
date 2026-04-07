@@ -51,22 +51,28 @@ func (p *Processor) CreateAMFSubscriptionsProcedure(c *gin.Context, subsId strin
 func (p *Processor) RemoveAmfSubscriptionsInfoProcedure(c *gin.Context, subsId string, ueId string) {
 	udrSelf := udr_context.GetSelf()
 	value, ok := udrSelf.UESubsCollection.Load(ueId)
-	var pd *models.ProblemDetails = nil
+	var pd *models.ProblemDetails
 
 	if !ok {
 		pd = util.ProblemDetailsNotFound("USER_NOT_FOUND")
 		logger.DataRepoLog.Errorf("RemoveAmfSubscriptionsInfoProcedure err: %s", pd.Detail)
+		c.Set(sbi.IN_PB_DETAILS_CTX_STR, pd.Cause)
+		c.JSON(int(pd.Status), pd)
+		return
 	}
 
 	UESubsData := value.(*udr_context.UESubsData)
-	_, ok = UESubsData.EeSubscriptionCollection[subsId]
+	eeSub, ok := UESubsData.EeSubscriptionCollection[subsId]
 
 	if !ok {
 		pd = util.ProblemDetailsNotFound("SUBSCRIPTION_NOT_FOUND")
 		logger.DataRepoLog.Errorf("RemoveAmfSubscriptionsInfoProcedure err: %s", pd.Detail)
+		c.Set(sbi.IN_PB_DETAILS_CTX_STR, pd.Cause)
+		c.JSON(int(pd.Status), pd)
+		return
 	}
 
-	if UESubsData.EeSubscriptionCollection[subsId].AmfSubscriptionInfos == nil {
+	if eeSub == nil || eeSub.AmfSubscriptionInfos == nil {
 		pd = util.ProblemDetailsNotFound("AMFSUBSCRIPTION_NOT_FOUND")
 	}
 
