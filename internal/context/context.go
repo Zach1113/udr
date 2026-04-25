@@ -217,6 +217,17 @@ func (context *UDRContext) NewAppDataInfluDataSubscriptionID() uint64 {
 	return context.appDataInfluDataSubscriptionIdGenerator
 }
 
+func (context *UDRContext) CreatePolicyDataSubscription(policyDataSubscription models.PolicyDataSubscription) string {
+	context.mtx.Lock()
+	defer context.mtx.Unlock()
+
+	newSubscriptionID := strconv.Itoa(context.PolicyDataSubscriptionIDGenerator)
+	context.PolicyDataSubscriptions[newSubscriptionID] = &policyDataSubscription
+	context.PolicyDataSubscriptionIDGenerator++
+
+	return newSubscriptionID
+}
+
 func NewInfluenceDataSubscriptionId() string {
 	if GetSelf().InfluenceDataSubscriptionIDGenerator == nil {
 		GetSelf().InfluenceDataSubscriptionIDGenerator = rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
