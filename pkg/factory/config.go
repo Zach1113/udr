@@ -74,7 +74,6 @@ type Configuration struct {
 	Mongodb         *Mongodb `yaml:"mongodb" valid:"optional"`
 	NrfUri          string   `yaml:"nrfUri" valid:"url,required"`
 	NrfCertPem      string   `yaml:"nrfCertPem,omitempty" valid:"optional"`
-	NrfNfInstanceId string   `yaml:"nrfNfInstanceId,omitempty" valid:"optional,uuidv4"`
 }
 
 type Logger struct {
